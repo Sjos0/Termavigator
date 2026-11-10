@@ -1,0 +1,6 @@
+{
+  "name": "Termavigator",
+  "description": "Navegador Android leve, rápido e personalizável",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
