@@ -28,20 +28,6 @@ fun TopProgressBar(
     if (!isLoading || progress >= 1f) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 2.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "${(progress * 100).toInt()}%",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                color = TermavigatorTextSecondaryLight
-            )
-        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
