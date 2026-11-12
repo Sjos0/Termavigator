@@ -4,6 +4,11 @@ on:
   push:
     branches: ["**"]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag do release (ex.: v1.0.1). Vazio = só gerar o APK assinado como artefato, sem publicar."
+        required: false
+        default: ""
 
 jobs:
   compile:
@@ -25,4 +30,79 @@ jobs:
           gradle-version: 9.3.1
 
       - name: Compilar debug e release (Kotlin, sem empacotar)
-        run: gradle :app:compileDebugKotlin :app:compileReleaseKotlin --no-daemon --stacktrace
+        shell: bash
+        run: |
+          set +e
+          gradle :app:compileDebugKotlin :app:compileReleaseKotlin --no-daemon > build-output.txt 2>&1
+          code=$?
+          { grep -E '^e: |^w: ' build-output.txt | head -40; grep -A4 'What went wrong' build-output.txt | head -20; } | while IFS= read -r line; do
+            echo "::error::${line}"
+          done
+          exit $code
+
+  release:
+    name: APK assinado (release)
+    if: github.event_name == 'workflow_dispatch'
+    needs: compile
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 9.3.1
+
+      - name: Decodificar keystore
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+
+      - name: Gerar APK release assinado
+        shell: bash
+        env:
+          KEYSTORE_PATH: ${{ runner.temp }}/upload.jks
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set +e
+          gradle :app:assembleRelease --no-daemon > release-output.txt 2>&1
+          code=$?
+          { grep -E '^e: ' release-output.txt | head -30; grep -A6 'What went wrong' release-output.txt | head -30; grep -i 'keystore\|password\|Cannot recover' release-output.txt | head -10; } | while IFS= read -r line; do
+            echo "::error::${line}"
+          done
+          exit $code
+
+      - name: Preparar APK com nome da versão
+        shell: bash
+        run: |
+          name="termavigator-${{ inputs.tag != '' && inputs.tag || 'build' }}-${GITHUB_RUN_NUMBER}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$name"
+          echo "APK_NAME=$name" >> "$GITHUB_ENV"
+
+      - name: Guardar APK como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.APK_NAME }}
+          path: ${{ env.APK_NAME }}
+
+      - name: Publicar release (só quando uma tag for informada)
+        if: inputs.tag != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ inputs.tag }}" "$APK_NAME" \
+            --title "Termavigator ${{ inputs.tag }}" \
+            --notes "APK release assinado gerado pelo GitHub Actions." \
+            --target "$GITHUB_SHA"
