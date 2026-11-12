@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><title>Chat fictício</title></head>
+<body>
+  <div class="resposta"></div>
+  <textarea id="prompt"></textarea>
+  <button id="enviar">Enviar</button>
+  <script>
+    document.getElementById('enviar').addEventListener('click', function () {
+      var ocupado = document.createElement('div');
+      ocupado.className = 'pensando';
+      ocupado.textContent = 'pensando...';
+      document.body.appendChild(ocupado);
+      setTimeout(function () {
+        ocupado.remove();
+        var texto = document.getElementById('prompt').value;
+        document.querySelector('.resposta').textContent = 'Resposta da IA ficticia para: ' + texto;
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
