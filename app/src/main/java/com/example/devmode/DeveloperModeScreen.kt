@@ -285,6 +285,32 @@ fun DeveloperModeScreen(onBackClick: () -> Unit) {
                 message = "Enviado em segundo plano. Acompanhe na notificação."
             }
         }) { Text("Enviar em segundo plano") }
+        val bridgeToken = remember { TermaiBridgeService.bridgeToken(context) }
+        Button(onClick = {
+            val target = SiteProfile(
+                name = "ponte",
+                url = loadedUrl.orEmpty(),
+                input = selectors[Role.INPUT].orEmpty(),
+                send = selectors[Role.SEND].orEmpty(),
+                thinking = selectors[Role.THINKING].orEmpty(),
+                response = selectors[Role.RESPONSE].orEmpty(),
+                stop = selectors[Role.STOP].orEmpty()
+            )
+            if (target.url.isBlank() || target.input.isBlank() || target.send.isBlank() || target.response.isBlank()) {
+                message = "Defina o site, entrada, enviar e resposta antes de ativar a ponte."
+            } else {
+                TermaiBridgeService.startBridge(context, target)
+                message = "Ponte ativa em 127.0.0.1:" + TermaiBridgeService.DEFAULT_PORT
+            }
+        }) { Text("Ativar ponte para o TermAI") }
+        Text("Token da ponte: " + bridgeToken, style = MaterialTheme.typography.bodySmall)
+        Row {
+            TextButton(onClick = {
+                clipboard.setText(AnnotatedString(bridgeToken))
+                message = "Token copiado."
+            }) { Text("Copiar token") }
+            TextButton(onClick = { TermaiBridgeService.stopBridge(context) }) { Text("Parar ponte") }
+        }
         val bridgeState by BridgeStatus.state.collectAsState()
         val bridgeResult by BridgeStatus.result.collectAsState()
         Text("Ponte: " + bridgeState, style = MaterialTheme.typography.bodySmall)

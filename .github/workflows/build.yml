@@ -42,7 +42,7 @@ jobs:
 
       - name: Testes do protocolo de ferramentas
         shell: bash
-        run: gradle :app:testDebugUnitTest --tests "com.example.devmode.*" --no-daemon
+        run: gradle :app:testDebugUnitTest --tests "com.example.devmode.*" --tests "com.example.bridge.*" --no-daemon
 
   release:
     name: APK assinado (release)
