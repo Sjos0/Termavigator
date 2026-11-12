@@ -1,0 +1,28 @@
+name: Build Termavigator
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  compile:
+    name: Compilar código Kotlin (sem assinatura)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 9.3.1
+
+      - name: Compilar debug e release (Kotlin, sem empacotar)
+        run: gradle :app:compileDebugKotlin :app:compileReleaseKotlin --no-daemon --stacktrace
