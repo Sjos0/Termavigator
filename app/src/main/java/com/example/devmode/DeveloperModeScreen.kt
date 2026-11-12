@@ -54,10 +54,18 @@ enum class Role(val label: String) {
 private const val BRIDGE_NAME = "TermavigatorDev"
 
 /** Ponte exposta à página só enquanto a tela de modo desenvolvedor estiver aberta. */
-class DevBridge(private val onPicked: (String) -> Unit) {
+class DevBridge(
+    private val onPicked: (String) -> Unit,
+    private val onCycleEvent: (String) -> Unit
+) {
     @JavascriptInterface
     fun picked(json: String) {
         onPicked(json)
+    }
+
+    @JavascriptInterface
+    fun onCycle(json: String) {
+        onCycleEvent(json)
     }
 }
 
@@ -83,6 +91,9 @@ fun DeveloperModeScreen(onBackClick: () -> Unit) {
     var profiles by remember { mutableStateOf(store.load()) }
     var message by remember { mutableStateOf<String?>(null) }
     var extracted by remember { mutableStateOf<String?>(null) }
+    var testPrompt by remember { mutableStateOf("Responda apenas: OK") }
+    var cycleStatus by remember { mutableStateOf<String?>(null) }
+    var cycleText by remember { mutableStateOf("") }
 
     fun applyPick(json: String) {
         val selector = runCatching { JSONObject(json).optString("selector") }.getOrDefault("")
@@ -93,7 +104,26 @@ fun DeveloperModeScreen(onBackClick: () -> Unit) {
         currentRole = Role.values()[(currentRole.ordinal + 1) % Role.values().size]
     }
 
-    val bridge = remember { DevBridge { json -> handler.post { applyPick(json) } } }
+    fun handleCycle(json: String) {
+        val o = runCatching { JSONObject(json) }.getOrNull() ?: return
+        val state = o.optString("state")
+        cycleStatus = when (state) {
+            "sending" -> "enviando"
+            "done" -> "resposta recebida"
+            "timeout" -> "tempo esgotado"
+            else -> o.optString("message", "erro")
+        }
+        if (state == "done" || state == "timeout") {
+            cycleText = o.optString("text")
+        }
+    }
+
+    val bridge = remember {
+        DevBridge(
+            onPicked = { json -> handler.post { applyPick(json) } },
+            onCycleEvent = { json -> handler.post { handleCycle(json) } }
+        )
+    }
 
     fun runJs(script: String, onResult: (String) -> Unit = {}) {
         webView?.evaluateJavascript(script) { raw -> onResult(unquote(raw ?: "")) }
@@ -194,6 +224,40 @@ fun DeveloperModeScreen(onBackClick: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall
                 )
             }
+        }
+
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = testPrompt,
+            onValueChange = { testPrompt = it },
+            singleLine = true,
+            label = { Text("Prompt de teste") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(4.dp))
+        Button(onClick = {
+            val target = SiteProfile(
+                name = "teste",
+                url = loadedUrl.orEmpty(),
+                input = selectors[Role.INPUT].orEmpty(),
+                send = selectors[Role.SEND].orEmpty(),
+                thinking = selectors[Role.THINKING].orEmpty(),
+                response = selectors[Role.RESPONSE].orEmpty(),
+                stop = selectors[Role.STOP].orEmpty()
+            )
+            if (target.input.isBlank() || target.send.isBlank() || target.response.isBlank()) {
+                message = "Defina entrada, enviar e resposta antes do teste."
+            } else {
+                cycleText = ""
+                cycleStatus = "enviando"
+                runJs(DomScripts.sendScript(target, testPrompt))
+            }
+        }) { Text("Enviar teste") }
+        cycleStatus?.let {
+            Text("Status: " + it, style = MaterialTheme.typography.bodySmall)
+        }
+        if (cycleText.isNotBlank()) {
+            Text(cycleText.take(2000), style = MaterialTheme.typography.bodySmall)
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
