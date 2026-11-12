@@ -199,6 +199,16 @@ class BrowserRepository(context: Context) {
         db.insert("downloads", null, cv)
     }
 
+    suspend fun updateDownload(id: Long, status: DownloadStatus, downloadedBytes: Long, totalBytes: Long) = withContext(Dispatchers.IO) {
+        val db = dbHelper.writableDatabase
+        val cv = ContentValues().apply {
+            put("status", status.name)
+            put("downloaded_bytes", downloadedBytes)
+            put("total_bytes", totalBytes)
+        }
+        db.update("downloads", cv, "id = ?", arrayOf(id.toString()))
+    }
+
     suspend fun deleteDownload(id: Long) = withContext(Dispatchers.IO) {
         val db = dbHelper.writableDatabase
         db.delete("downloads", "id = ?", arrayOf(id.toString()))

@@ -2,6 +2,7 @@ package com.example.core
 
 import com.example.core.models.BookmarkItem
 import com.example.core.models.DownloadItem
+import com.example.core.models.DownloadStatus
 import com.example.core.models.HistoryItem
 import com.example.core.models.TabItem
 import com.example.core.models.TabState
@@ -30,7 +31,8 @@ interface BrowserCore {
     suspend fun addHistory(url: String, title: String)
     suspend fun clearHistory()
 
-    suspend fun addDownload(name: String, path: String, totalBytes: Long)
+    suspend fun addDownload(name: String, path: String, totalBytes: Long): Long
+    suspend fun updateDownload(id: Long, status: DownloadStatus, downloadedBytes: Long, totalBytes: Long)
     suspend fun deleteDownload(id: Long)
 
     fun shouldBlockUrl(url: String): Boolean

@@ -55,8 +55,8 @@ class SettingsRepository(private val context: Context) {
             }.getOrDefault(AppThemeMode.LIGHT),
             accentColorIndex = prefs[PreferencesKeys.ACCENT_COLOR_INDEX] ?: 0,
             toolbarPosition = runCatching {
-                ToolbarPosition.valueOf(prefs[PreferencesKeys.TOOLBAR_POSITION] ?: ToolbarPosition.BOTTOM.name)
-            }.getOrDefault(ToolbarPosition.BOTTOM),
+                ToolbarPosition.valueOf(prefs[PreferencesKeys.TOOLBAR_POSITION] ?: ToolbarPosition.TOP.name)
+            }.getOrDefault(ToolbarPosition.TOP),
             maxActiveTabs = prefs[PreferencesKeys.MAX_ACTIVE_TABS] ?: 3,
             blockAds = prefs[PreferencesKeys.BLOCK_ADS] ?: true,
             doNotTrack = prefs[PreferencesKeys.DO_NOT_TRACK] ?: false,
