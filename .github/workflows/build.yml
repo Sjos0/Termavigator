@@ -30,7 +30,7 @@ jobs:
           set +e
           gradle :app:compileDebugKotlin :app:compileReleaseKotlin --no-daemon > build-output.txt 2>&1
           code=$?
-          grep -E '^e: |What went wrong|^> ' build-output.txt | head -40 | while IFS= read -r line; do
+          { grep -E '^e: |^w: ' build-output.txt | head -40; grep -A4 'What went wrong' build-output.txt | head -20; } | while IFS= read -r line; do
             echo "::error::${line}"
           done
           exit $code
