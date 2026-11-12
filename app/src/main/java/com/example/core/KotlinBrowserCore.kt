@@ -51,50 +51,45 @@ class KotlinBrowserCore(
         }
     }
 
+    private val sampleTabIds = setOf("tab_1", "tab_2", "tab_3", "tab_4", "tab_5")
+    private val sampleUrls = setOf(
+        "https://termavigator.app/minimal-interfaces",
+        "https://design.com",
+        "https://newsfeed.org",
+        "https://ui-trend.net",
+        "https://shop.com",
+        "https://recipehub.com",
+        "https://creativestudio.io",
+        "https://shopwise.com",
+        "https://globalforum.net",
+        "https://musicbeats.com"
+    )
+    private val sampleDownloadNames = setOf(
+        "User_Research_Assets.zip",
+        "Briefing_Document.pdf",
+        "Creative_Portfolio.pdf"
+    )
+
+    /** Remove os dados de exemplo que versões antigas gravaram no banco. */
+    private suspend fun removeSampleData() {
+        repository.getAllTabs().filter { it.id in sampleTabIds }.forEach { repository.deleteTab(it.id) }
+        repository.getBookmarks().filter { it.url in sampleUrls }.forEach { repository.deleteBookmark(it.id) }
+        repository.getDownloads().filter { it.name in sampleDownloadNames }.forEach { repository.deleteDownload(it.id) }
+        val history = repository.getHistory()
+        if (history.isNotEmpty() && history.all { it.url in sampleUrls }) {
+            repository.clearHistory()
+        }
+    }
+
     private suspend fun loadInitialSession() {
+        removeSampleData()
         val storedTabs = repository.getAllTabs()
         if (storedTabs.isNotEmpty()) {
             _tabs.value = storedTabs
             _currentTab.value = storedTabs.firstOrNull { it.state == TabState.ACTIVE } ?: storedTabs.first()
         } else {
-            // Create initial default open tabs as seen in reference screenshots
-            val initialTabs = listOf(
-                TabItem(
-                    id = "tab_1",
-                    url = "https://termavigator.app/minimal-interfaces",
-                    title = "The Evolution of Minimal Digital Interfaces",
-                    state = TabState.ACTIVE
-                ),
-                TabItem(
-                    id = "tab_2",
-                    url = "https://design.com",
-                    title = "Daily Design",
-                    state = TabState.ACTIVE
-                ),
-                TabItem(
-                    id = "tab_3",
-                    url = "https://newsfeed.org",
-                    title = "World News",
-                    state = TabState.ACTIVE
-                ),
-                TabItem(
-                    id = "tab_4",
-                    url = "https://ui-trend.net",
-                    title = "Minimalist UI",
-                    state = TabState.PAUSED
-                ),
-                TabItem(
-                    id = "tab_5",
-                    url = "https://shop.com",
-                    title = "Shopping Cart",
-                    state = TabState.PAUSED
-                )
-            )
-            for (tab in initialTabs) {
-                repository.saveTab(tab)
-            }
-            _tabs.value = initialTabs
-            _currentTab.value = initialTabs.first()
+            _tabs.value = emptyList()
+            _currentTab.value = null
         }
     }
 
