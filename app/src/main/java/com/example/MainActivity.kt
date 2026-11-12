@@ -44,6 +44,7 @@ import com.example.ui.PrivacyScreen
 import com.example.ui.PrivateScreen
 import com.example.ui.SearchInputDialog
 import com.example.ui.SettingsScreen
+import com.example.devmode.DeveloperModeScreen
 import com.example.ui.TabsScreen
 import com.example.ui.backup.BackupScreen
 import com.example.ui.backup.CreatePasswordScreen
@@ -73,7 +74,8 @@ enum class Screen {
     BACKUP,
     BACKUP_PASSWORD,
     BACKUP_RESTORE,
-    BACKUP_MANAGE
+    BACKUP_MANAGE,
+    DEVELOPER_MODE
 }
 
 class MainActivity : ComponentActivity() {
@@ -367,6 +369,9 @@ fun TermavigatorApp(
                         onMenuClick = { showMenu = true }
                     )
                 }
+                Screen.DEVELOPER_MODE -> {
+                    DeveloperModeScreen(onBackClick = { navigateBack() })
+                }
                 Screen.SETTINGS -> {
                     SettingsScreen(
                         tabCount = tabs.size,
@@ -377,6 +382,7 @@ fun TermavigatorApp(
                         onAppearanceClick = { navigateTo(Screen.APPEARANCE) },
                         onMemoryClick = { navigateTo(Screen.MEMORY) },
                         onAboutClick = { navigateTo(Screen.MEMORY) },
+                        onDeveloperClick = { navigateTo(Screen.DEVELOPER_MODE) },
                         onUrlClick = { showSearchDialog = true },
                         onTabsClick = { navigateTo(Screen.TABS_MANAGER) }
                     )
