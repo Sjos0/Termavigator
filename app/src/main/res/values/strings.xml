@@ -74,4 +74,6 @@
     <string name="stop">Parar</string>
     <string name="confirm">Confirmar</string>
     <string name="cancel">Cancelar</string>
+    <string name="developer_mode">Modo desenvolvedor</string>
+    <string name="developer_mode_desc">Calibrar a interface de um site para o TermAI</string>
 </resources>
