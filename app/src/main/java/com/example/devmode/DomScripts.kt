@@ -134,7 +134,7 @@ object DomScripts {
 """
 
     /** Monta o script de envio de teste a partir dos seletores calibrados. */
-    fun sendScript(p: SiteProfile, prompt: String): String {
+    fun sendScript(p: SiteProfile, prompt: String, timeoutMs: Int = 180000): String {
         val cfg = JSONObject()
             .put("input", p.input)
             .put("send", p.send)
@@ -142,7 +142,7 @@ object DomScripts {
             .put("response", p.response)
             .put("stop", p.stop)
             .put("prompt", prompt)
-            .put("timeoutMs", 180000)
+            .put("timeoutMs", timeoutMs)
         return "(function (cfg) {" + SEND_BODY + "})(" + cfg.toString() + ");"
     }
 }
