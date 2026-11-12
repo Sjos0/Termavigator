@@ -51,7 +51,8 @@ fun MenuBottomSheet(
     onDownloadsClick: () -> Unit,
     onAddToBookmarks: () -> Unit,
     onShare: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onCheckUpdates: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -191,6 +192,17 @@ fun MenuBottomSheet(
                 onClick = {
                     onDismiss()
                     onSettingsClick()
+                }
+            )
+
+            // Check for updates
+            MenuItemRow(
+                iconRes = R.drawable.ic_refresh,
+                title = stringResource(id = R.string.check_updates),
+                testTag = "menu_check_updates",
+                onClick = {
+                    onDismiss()
+                    onCheckUpdates()
                 }
             )
 

@@ -74,4 +74,18 @@
     <string name="stop">Parar</string>
     <string name="confirm">Confirmar</string>
     <string name="cancel">Cancelar</string>
+    <string name="check_updates">Verificar atualizações</string>
+    <string name="update_title">Atualização</string>
+    <string name="update_checking">Verificando atualizações</string>
+    <string name="update_available_title">Nova versão disponível</string>
+    <string name="update_available_text">A versão %1$s está disponível no GitHub. Deseja baixar agora?</string>
+    <string name="update_download">Baixar</string>
+    <string name="update_later">Agora não</string>
+    <string name="update_downloading_title">Baixando atualização</string>
+    <string name="update_percent">%1$d%%</string>
+    <string name="update_install_title">Atualizar o Termavigator?</string>
+    <string name="update_install_text">O download terminou. Ao instalar, o app é atualizado e seus dados são mantidos.</string>
+    <string name="update_install">Atualizar</string>
+    <string name="update_uptodate">Você já está com a versão mais recente (%1$s).</string>
+    <string name="update_ok">OK</string>
 </resources>
