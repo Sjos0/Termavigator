@@ -55,6 +55,7 @@ fun SettingsScreen(
     onAppearanceClick: () -> Unit,
     onMemoryClick: () -> Unit,
     onAboutClick: () -> Unit,
+    onDeveloperClick: () -> Unit,
     onUrlClick: () -> Unit,
     onTabsClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -161,6 +162,18 @@ fun SettingsScreen(
                         subtitle = stringResource(id = R.string.memory_desc),
                         testTag = "settings_memory",
                         onClick = onMemoryClick
+                    )
+                    HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
+                }
+
+                // Developer mode
+                item {
+                    SettingsRowItem(
+                        iconRes = R.drawable.ic_info,
+                        title = stringResource(id = R.string.developer_mode),
+                        subtitle = stringResource(id = R.string.developer_mode_desc),
+                        testTag = "settings_developer",
+                        onClick = onDeveloperClick
                     )
                     HorizontalDivider(color = Color(0xFFF1F5F9), thickness = 1.dp)
                 }
