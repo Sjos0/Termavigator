@@ -259,6 +259,25 @@ fun DeveloperModeScreen(onBackClick: () -> Unit) {
         if (cycleText.isNotBlank()) {
             Text(cycleText.take(2000), style = MaterialTheme.typography.bodySmall)
         }
+        if (cycleText.isNotBlank()) {
+            ToolCallPanel(
+                text = cycleText,
+                onSendResult = { block ->
+                    val target = SiteProfile(
+                        name = "teste",
+                        url = loadedUrl.orEmpty(),
+                        input = selectors[Role.INPUT].orEmpty(),
+                        send = selectors[Role.SEND].orEmpty(),
+                        thinking = selectors[Role.THINKING].orEmpty(),
+                        response = selectors[Role.RESPONSE].orEmpty(),
+                        stop = selectors[Role.STOP].orEmpty()
+                    )
+                    cycleText = ""
+                    cycleStatus = "enviando resultado"
+                    runJs(DomScripts.sendScript(target, block))
+                }
+            )
+        }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
