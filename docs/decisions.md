@@ -24,3 +24,13 @@
 ## Decisão 06: Gerenciamento e Pausa de Abas
 - **Contexto:** Dispositivos com 2 GB de RAM exigem descarte de WebViews inativas.
 - **Decisão:** `KotlinBrowserCore` limita o número de abas ativas simultâneas (padrão 3, ajustável entre 1 e 10). Ao ultrapassar o limite, as abas mais antigas são marcadas como `PAUSED` e o WebView é descartado da memória. Ao receber `onTrimMemory`, todas as abas em segundo plano são pausadas imediatamente.
+
+## Decisão 07: Atualização dentro do app via GitHub Releases
+- **Contexto:** O app é distribuído por APK, fora da Play Store. O usuário precisa de um jeito simples de atualizar.
+- **Decisão:** O menu tem "Verificar atualizações". O app consulta o último release público do repo (`releases/latest`), compara a tag com a versão instalada, baixa o APK anexado com barra de progresso e abre o instalador do sistema.
+- **Motivo:** Sem Play Store e sem servidor próprio, o GitHub Releases já entrega o APK e a versão. Não há token no app, porque o repo é público e a API de releases é anônima.
+- **Consequências:**
+  - O APK precisa estar anexado como asset do release, com a tag no formato `vX.Y.Z`.
+  - Atualizações só funcionam entre APKs assinados com a mesma chave.
+  - O usuário precisa permitir "instalar apps desconhecidos" para o Termavigator, na primeira vez.
+
