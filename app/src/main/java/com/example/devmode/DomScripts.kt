@@ -2,7 +2,7 @@ package com.example.devmode
 
 import org.json.JSONObject
 
-/** Scripts injetados na página durante a calibração. Não guardam nada fora da página. */
+/** Scripts injetados na página durante a calibração e o envio de teste. */
 object DomScripts {
 
     /** Árvore reduzida: só os elementos úteis para calibrar a interface. */
@@ -85,4 +85,64 @@ object DomScripts {
     fun countScript(selector: String): String =
         "(function (s) { try { return document.querySelectorAll(s).length; } catch (e) { return -1; } })(" +
             JSONObject.quote(selector) + ");"
+
+    /** Corpo do ciclo de envio: digita, envia, observa "pensando" e a resposta, e avisa pela ponte. */
+    private const val SEND_BODY = """
+  function q(s) { try { return s ? document.querySelector(s) : null; } catch (e) { return null; } }
+  function emit(o) { window.TermavigatorDev.onCycle(JSON.stringify(o)); }
+  var input = q(cfg.input);
+  if (!input) { emit({ state: 'error', message: 'Campo de entrada não encontrado' }); return 'erro'; }
+  var before = q(cfg.response);
+  var baseline = before ? (before.innerText || '') : '';
+  input.focus();
+  if (input.isContentEditable) {
+    input.textContent = cfg.prompt;
+  } else {
+    var proto = input.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+    Object.getOwnPropertyDescriptor(proto, 'value').set.call(input, cfg.prompt);
+  }
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  setTimeout(function () {
+    var btn = q(cfg.send);
+    if (!btn) { emit({ state: 'error', message: 'Botão enviar não encontrado' }); return; }
+    btn.click();
+    emit({ state: 'sending' });
+    var started = Date.now();
+    var seenThinking = false;
+    var lastText = baseline;
+    var stableSince = Date.now();
+    var timer = setInterval(function () {
+      var thinking = !!q(cfg.thinking);
+      if (thinking) seenThinking = true;
+      var resp = q(cfg.response);
+      var text = resp ? (resp.innerText || '') : '';
+      if (text !== lastText) { lastText = text; stableSince = Date.now(); }
+      var stopVisible = !!q(cfg.stop);
+      if (Date.now() - started > cfg.timeoutMs) {
+        clearInterval(timer);
+        emit({ state: 'timeout', text: lastText });
+        return;
+      }
+      var changed = seenThinking || lastText !== baseline;
+      if (changed && !thinking && !stopVisible && Date.now() - stableSince > 3000) {
+        clearInterval(timer);
+        emit({ state: 'done', text: lastText });
+      }
+    }, 500);
+  }, 300);
+  return 'ok';
+"""
+
+    /** Monta o script de envio de teste a partir dos seletores calibrados. */
+    fun sendScript(p: SiteProfile, prompt: String): String {
+        val cfg = JSONObject()
+            .put("input", p.input)
+            .put("send", p.send)
+            .put("thinking", p.thinking)
+            .put("response", p.response)
+            .put("stop", p.stop)
+            .put("prompt", prompt)
+            .put("timeoutMs", 180000)
+        return "(function (cfg) {" + SEND_BODY + "})(" + cfg.toString() + ");"
+    }
 }
