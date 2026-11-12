@@ -37,3 +37,13 @@ Branch: `feature/modo-desenvolvedor`. Status dos itens de código: escritos, ain
 
 ## Próximo passo
 - [ ] Adaptar o TermAI para consumir os perfis (fase Termux, depois do modo desenvolvedor validado)
+
+## Segundo plano (F4)
+- [x] Serviço em primeiro plano (dataSync), iniciado só por ação do usuário
+- [x] Notificação com estado da tarefa e botão Parar
+- [x] WebView sem tela, criado só durante a tarefa e destruído ao terminar
+- [x] Pedido de permissão de notificação (Android 13+)
+- [ ] Teste de 30 minutos em segundo plano no aparelho
+- [ ] Monitorar bateria e memória com a ponte ativa
+- [ ] API local com token para o harness do TermAI (pendente, prevista na seção 3 do doc 03)
+

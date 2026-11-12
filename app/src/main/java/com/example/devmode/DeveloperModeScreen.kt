@@ -1,6 +1,12 @@
 package com.example.devmode
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.compose.runtime.collectAsState
 import android.os.Handler
 import android.os.Looper
 import android.webkit.JavascriptInterface
@@ -253,6 +259,38 @@ fun DeveloperModeScreen(onBackClick: () -> Unit) {
                 runJs(DomScripts.sendScript(target, testPrompt))
             }
         }) { Text("Enviar teste") }
+        val notificationPermission = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { }
+        Button(onClick = {
+            val target = SiteProfile(
+                name = "teste",
+                url = loadedUrl.orEmpty(),
+                input = selectors[Role.INPUT].orEmpty(),
+                send = selectors[Role.SEND].orEmpty(),
+                thinking = selectors[Role.THINKING].orEmpty(),
+                response = selectors[Role.RESPONSE].orEmpty(),
+                stop = selectors[Role.STOP].orEmpty()
+            )
+            if (target.url.isBlank() || target.input.isBlank() || target.send.isBlank() || target.response.isBlank()) {
+                message = "Defina o site, entrada, enviar e resposta antes do envio em segundo plano."
+            } else {
+                if (Build.VERSION.SDK_INT >= 33 &&
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+                    android.content.pm.PackageManager.PERMISSION_GRANTED
+                ) {
+                    notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                TermaiBridgeService.send(context, target, testPrompt)
+                message = "Enviado em segundo plano. Acompanhe na notificação."
+            }
+        }) { Text("Enviar em segundo plano") }
+        val bridgeState by BridgeStatus.state.collectAsState()
+        val bridgeResult by BridgeStatus.result.collectAsState()
+        Text("Ponte: " + bridgeState, style = MaterialTheme.typography.bodySmall)
+        if (bridgeResult.isNotBlank()) {
+            Text(bridgeResult.take(2000), style = MaterialTheme.typography.bodySmall)
+        }
         cycleStatus?.let {
             Text("Status: " + it, style = MaterialTheme.typography.bodySmall)
         }

@@ -93,7 +93,7 @@ object DomScripts {
   var input = q(cfg.input);
   if (!input) { emit({ state: 'error', message: 'Campo de entrada não encontrado' }); return 'erro'; }
   var before = q(cfg.response);
-  var baseline = before ? (before.innerText || '') : '';
+  var baseline = before ? (before.innerText || before.textContent || '') : '';
   input.focus();
   if (input.isContentEditable) {
     input.textContent = cfg.prompt;
@@ -115,7 +115,7 @@ object DomScripts {
       var thinking = !!q(cfg.thinking);
       if (thinking) seenThinking = true;
       var resp = q(cfg.response);
-      var text = resp ? (resp.innerText || '') : '';
+      var text = resp ? (resp.innerText || resp.textContent || '') : '';
       if (text !== lastText) { lastText = text; stableSince = Date.now(); }
       var stopVisible = !!q(cfg.stop);
       if (Date.now() - started > cfg.timeoutMs) {
