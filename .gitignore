@@ -16,3 +16,7 @@
 local.properties
 .env
 debug.keystore
+
+# Keystores de assinatura nunca vão para o repo
+*.jks
+*.keystore

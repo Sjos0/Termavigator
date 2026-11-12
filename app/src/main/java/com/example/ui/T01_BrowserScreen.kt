@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.blocking.ContentBlocker
 import com.example.core.models.TabItem
@@ -69,7 +70,8 @@ fun BrowserScreen(
     var canGoForward by remember { mutableStateOf(false) }
 
     val activeUrl = currentTab?.url.orEmpty()
-    val isDemoArticle = activeUrl.contains("termavigator.app/minimal-interfaces") || activeUrl.isEmpty()
+    val hasPage = activeUrl.isNotEmpty()
+    val bgArgb = MaterialTheme.colorScheme.background.toArgb()
 
     val bottomBar = @Composable {
         BrowserBottomBar(
@@ -91,17 +93,17 @@ fun BrowserScreen(
             bottomBar()
         }
 
-        TopProgressBar(progress = pageProgress, isLoading = isLoading || isDemoArticle)
+        TopProgressBar(progress = pageProgress, isLoading = isLoading)
 
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            if (isDemoArticle) {
-                // High fidelity reproduction of reference article view shown in T01 screenshot
-                ArticleDemoContent(modifier = Modifier.fillMaxSize())
+            if (!hasPage) {
+                Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
             } else {
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
                     factory = { ctx ->
                         WebView(ctx).apply {
+                            setBackgroundColor(bgArgb)
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             settings.cacheMode = WebSettings.LOAD_DEFAULT
@@ -175,78 +177,5 @@ fun BrowserScreen(
                 webViewRef?.clearCache(true)
             }
         }
-    }
-}
-
-@Composable
-fun ArticleDemoContent(modifier: Modifier = Modifier) {
-    val scrollState = rememberScrollState()
-
-    Column(
-        modifier = modifier
-            .verticalScroll(scrollState)
-            .padding(horizontal = 24.dp, vertical = 20.dp)
-    ) {
-        Text(
-            text = "TECHNOLOGY",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            color = TermavigatorTextSecondaryLight,
-            letterSpacing = 1.sp
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = "The Evolution of Minimal Digital Interfaces",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 32.sp,
-            color = TermavigatorBlueDark
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "Published · 5 min read",
-            fontSize = 13.sp,
-            color = TermavigatorTextSecondaryLight
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color(0xFFE2EDF9))
-        )
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        Text(
-            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation. Uta maii ori aripor senmua quis plascre dum. encommodo casit in consemdo conseruat.",
-            fontSize = 16.sp,
-            lineHeight = 24.sp,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = "Designing for the user",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = TermavigatorBlueDark
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Text(
-            text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation. Uta maii ori aripor senmua quis plascre dum. encommodo casit in consentuo, milupii, nonc nudo conseuat.",
-            fontSize = 16.sp,
-            lineHeight = 24.sp,
-            color = MaterialTheme.colorScheme.onBackground
-        )
     }
 }
