@@ -34,3 +34,7 @@ jobs:
             echo "::error::${line}"
           done
           exit $code
+
+      - name: Testes do protocolo de ferramentas
+        shell: bash
+        run: gradle :app:testDebugUnitTest --tests "com.example.devmode.*" --no-daemon
