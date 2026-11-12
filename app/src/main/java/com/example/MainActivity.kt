@@ -39,6 +39,8 @@ import com.example.ui.DownloadsScreen
 import com.example.ui.HistoryScreen
 import com.example.ui.MemoryScreen
 import com.example.ui.MenuBottomSheet
+import com.example.update.UpdateDialogs
+import com.example.update.rememberUpdateController
 import com.example.ui.NewTabScreen
 import com.example.ui.PrivacyScreen
 import com.example.ui.PrivateScreen
@@ -181,6 +183,7 @@ fun TermavigatorApp(
     var screenStack by remember { mutableStateOf(listOf(Screen.BROWSER)) }
     var showMenu by remember { mutableStateOf(false) }
     var showSearchDialog by remember { mutableStateOf(false) }
+    val updates = rememberUpdateController()
 
     fun navigateTo(screen: Screen) {
         screenStack = screenStack + screen
@@ -506,9 +509,15 @@ fun TermavigatorApp(
             onShare = {
                 currentTab?.url?.let { onShareUrl(it) }
             },
-            onSettingsClick = { navigateTo(Screen.SETTINGS) }
+            onSettingsClick = { navigateTo(Screen.SETTINGS) },
+            onCheckUpdates = {
+                showMenu = false
+                updates.check()
+            }
         )
     }
+
+    UpdateDialogs(controller = updates)
 
     // Search / URL Input Dialog
     if (showSearchDialog) {
