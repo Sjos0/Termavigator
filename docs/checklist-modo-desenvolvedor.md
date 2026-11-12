@@ -12,7 +12,16 @@ Branch: `feature/modo-desenvolvedor`. Status dos itens de código: escritos, ain
 - [x] Salvar perfil em JSON no armazenamento interno do app
 - [x] Listar e apagar perfis
 - [ ] Teste de calibração completo, com mensagem de teste (F2)
-- [ ] Ciclo de envio e leitura (F2)
+
+## Protocolo de ferramentas (F3)
+- [x] Leitura de blocos termai-tool, com validação de JSON, nome e campo tool
+- [x] Blocos inválidos aparecem como erro, sem serem descartados
+- [x] Resultado em bloco termai-result, com id, parte e total
+- [x] Painel de chamadas e botão para devolver resultado ao chat
+- [x] Testes unitários do parser (rodam no GitHub Actions)
+- [ ] Devolução de resultados em múltiplas partes (um ciclo por parte)
+- [ ] Testar o protocolo com a IA real do site
+- [x] Ciclo de envio e leitura (F2), escrito e compilado
 
 ## Segurança
 - [x] Ponte JavaScript só existe na tela de modo desenvolvedor, e é removida ao sair
