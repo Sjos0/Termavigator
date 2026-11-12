@@ -36,6 +36,8 @@ import com.example.ui.ArchivedTabsScreen
 import com.example.ui.BookmarksScreen
 import com.example.ui.BrowserScreen
 import com.example.ui.DownloadsScreen
+import com.example.core.downloads.DownloadStarter
+import androidx.compose.ui.platform.LocalContext
 import com.example.ui.HistoryScreen
 import com.example.ui.MemoryScreen
 import com.example.ui.MenuBottomSheet
@@ -160,7 +162,21 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openDownloadedFile(path: String) {
-        Toast.makeText(this, "Arquivo pronto: $path", Toast.LENGTH_SHORT).show()
+        val file = java.io.File(path)
+        if (!file.exists()) {
+            Toast.makeText(this, "Arquivo não encontrado.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val uri = androidx.core.content.FileProvider.getUriForFile(this, packageName + ".fileprovider", file)
+        val mime = android.webkit.MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(file.extension.lowercase()) ?: "*/*"
+        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, mime)
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        runCatching { startActivity(intent) }.onFailure {
+            Toast.makeText(this, "Nenhum app abre este tipo de arquivo.", Toast.LENGTH_SHORT).show()
+        }
     }
 }
 
@@ -179,6 +195,8 @@ fun TermavigatorApp(
     onOpenFile: (String) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val appContext = LocalContext.current.applicationContext
+    val downloader = remember { DownloadStarter(appContext, browserCore) }
     var currentScreen by remember { mutableStateOf(Screen.BROWSER) }
     var screenStack by remember { mutableStateOf(listOf(Screen.BROWSER)) }
     var showMenu by remember { mutableStateOf(false) }
@@ -226,6 +244,9 @@ fun TermavigatorApp(
                             coroutineScope.launch {
                                 browserCore.updateCurrentTab(url, title)
                             }
+                        },
+                        onDownloadRequested = { url, ua, cd, mime, len ->
+                            downloader.start(url, ua, cd, mime, len)
                         }
                     )
                 }

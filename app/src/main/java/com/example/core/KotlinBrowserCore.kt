@@ -4,6 +4,7 @@ import android.content.ComponentCallbacks2
 import com.example.blocking.ContentBlocker
 import com.example.core.models.BookmarkItem
 import com.example.core.models.DownloadItem
+import com.example.core.models.DownloadStatus
 import com.example.core.models.HistoryItem
 import com.example.core.models.TabItem
 import com.example.core.models.TabState
@@ -274,8 +275,14 @@ class KotlinBrowserCore(
         refreshHistory()
     }
 
-    override suspend fun addDownload(name: String, path: String, totalBytes: Long) {
-        repository.addDownload(name, path, totalBytes)
+    override suspend fun addDownload(name: String, path: String, totalBytes: Long): Long {
+        val id = repository.addDownload(name, path, totalBytes)
+        refreshDownloads()
+        return id
+    }
+
+    override suspend fun updateDownload(id: Long, status: DownloadStatus, downloadedBytes: Long, totalBytes: Long) {
+        repository.updateDownload(id, status, downloadedBytes, totalBytes)
         refreshDownloads()
     }
 

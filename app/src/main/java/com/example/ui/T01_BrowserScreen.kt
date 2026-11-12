@@ -34,7 +34,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.toArgb
+import android.view.ViewGroup
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.blocking.ContentBlocker
 import com.example.core.models.TabItem
@@ -60,6 +62,7 @@ fun BrowserScreen(
     onTabsClick: () -> Unit,
     onMenuClick: () -> Unit,
     onPageLoaded: (url: String, title: String) -> Unit,
+    onDownloadRequested: (url: String, userAgent: String?, contentDisposition: String?, mimeType: String?, contentLength: Long) -> Unit = { _, _, _, _, _ -> },
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -95,7 +98,7 @@ fun BrowserScreen(
 
         TopProgressBar(progress = pageProgress, isLoading = isLoading)
 
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+        Box(modifier = Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
             if (!hasPage) {
                 Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
             } else {
@@ -104,6 +107,13 @@ fun BrowserScreen(
                     factory = { ctx ->
                         WebView(ctx).apply {
                             setBackgroundColor(bgArgb)
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            setDownloadListener { url, userAgent, contentDisposition, mimeType, contentLength ->
+                                onDownloadRequested(url, userAgent, contentDisposition, mimeType, contentLength)
+                            }
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
                             settings.cacheMode = WebSettings.LOAD_DEFAULT
