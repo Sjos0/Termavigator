@@ -110,3 +110,21 @@ jobs:
             --title "Termavigator ${{ inputs.tag }}" \
             --notes "APK release assinado gerado pelo GitHub Actions." \
             --target "$GITHUB_SHA"
+
+  site-ficticio:
+    name: Modo desenvolvedor contra site fictício (jsdom)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Instalar jsdom
+        run: npm init -y > /dev/null && npm install --no-save jsdom@24
+
+      - name: Rodar os scripts do modo desenvolvedor contra o site fictício
+        run: node tests/site-ficticio/run.mjs
